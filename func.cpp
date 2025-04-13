@@ -120,20 +120,36 @@ namespace db {
     }
 
     void Database::LoadFromFile(const std::string& filename) {
-        std::ifstream in(filename);
+         std::ifstream in(filename);
+
+        if (!in) {
+            std::cerr << "Не удалось открыть файл: " << filename << std::endl;
+            return;
+        }
+
         int file_size;
         in >> file_size;
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         delete[] _products;
-        _products = new Product[file_size];
-        _capacity = file_size;
+        _products = nullptr;
         _size = 0;
+        _capacity = 0;
 
-        for (int i = 0; i < file_size; ++i) {
-            Product product;
-            in >> product;
-            AddMag(product);
+        if (file_size > 0) {
+            _products = new Product[file_size];
+            _capacity = file_size;
+    
+            for (int i = 0; i < file_size; ++i) {
+                Product product;
+                in >> product;
+                if (!in) {
+                    std::cerr << "Не удалось прочитать данные из файла." << std::endl;
+                    break;
+                } else {
+                    _products[_size++] = product;
+                }
+            }
         }
         in.close();
     }
